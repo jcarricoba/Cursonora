@@ -39,13 +39,19 @@ menuOpciones=Menu(barraMenu,tearoff=0)
 menuAyuda=Menu(barraMenu,tearoff=0)
 
 
+#15.Para la función de borrado asigno una variable String a cada Entry a la que añado como propiedad del Entry "textvariable"
+IDc=StringVar()
+Nomc=StringVar()
+Lugc=StringVar()
+FIc=StringVar()
+FFc=StringVar()
+
+
 
 #----------------------FUNCIONES
 #13. He creado un archivo aparte para las funciones de esta aplicación (dentro de una carpeta "bin"). Le he llamado Funciones.py y la vamos a importar aquí bajo el nombre de Funciones.
 #de este modo, para llamar a una función desde los command de los botones y menús, bastará con poner Funciones.Nombredelafunciónenelotroarchivo.
 import bin.Funciones as Funciones
-
-
 #5b Esta función es la comodín, sacará un popup || Eureka "hola mundo" || en lo que vamos definiendo cada función
 #def Eureka():
 #	messagebox.showinfo("Eureka", "Hola Mundo")
@@ -53,7 +59,6 @@ import bin.Funciones as Funciones
 
 #Llamamos a la función que crea la BBDD (si ya está creada no hace nada)
 Funciones.CreandoBBDD()
-
 #Incluimos una función para confirmar que se desea cerrar el programa
 def deseasalir():
 	OpcionElegida=Funciones.Salir()
@@ -62,6 +67,34 @@ def deseasalir():
 	else:
 		return
 
+#La función de borrar campos no se puede sacar fuera porque hace referencia a los entry
+def borrarcampos():
+	IDc.set("")
+	Nomc.set("")
+	Lugc.set("")
+	FIc.set("")
+	FFc.set("")
+	ccheckFinalizado=False
+	TextComentario.delete(1.0,END)
+
+#La función IrBuscar usará datos que vuelvan de Funciones
+def IrBuscar():
+	respuestas=Funciones.Buscar(IDc.get(),Nomc.get(),Lugc.get())
+	if (respuestas!="" and respuestas!="no"):
+		for respuesta in respuestas:
+			IDc.set(respuesta[0])
+			Nomc.set(respuesta[1])
+			Lugc.set(respuesta[2])
+			FIc.set(respuesta[3])
+			FFc.set(respuesta[4])
+			ccheckFinalizado.set(respuesta[5])
+			TextComentario.delete(1.0,END)
+			TextComentario.insert(END,respuesta[6])
+	elif (respuestas=="no"):
+		borrarcampos()
+	else:
+		messagebox.showwarning("Error","La búsqueda no devolvió ningún registro")
+	
 #----------------------SUBMENUS (configuración)
 #5c los add_command	
 menuArchivo.add_command(label="¿Hay algo que meter aquí?",command=Funciones.UnaCualquiera)
@@ -90,23 +123,23 @@ venroot.rowconfigure(0,weight="1") #lo mismo en horizontal
 
 #7 el GRID del programa consistirá en 4 columnas y 5 filas, comenzamos por la del medio, los cuadros de entrada (3 entry, 1 checkbox, 1 textbox)
 
-entryIDcurso=Entry(venframe)
+entryIDcurso=Entry(venframe,textvariable=IDc)
 entryIDcurso.config(width="10",font="14",fg="BLUE",bg="GREY")
 entryIDcurso.grid(row=0,column=1,padx=10,pady=5,sticky="W")
 
-entryNombrecurso=Entry(venframe)
+entryNombrecurso=Entry(venframe,textvariable=Nomc)
 entryNombrecurso.config(font="14",fg="BLUE")
 entryNombrecurso.grid(row=1,column=1,padx=10,pady=5)
 
-entryLugar=Entry(venframe)
+entryLugar=Entry(venframe,textvariable=Lugc)
 entryLugar.config(font="14",fg="BLUE")
 entryLugar.grid(row=2,column=1,padx=10,pady=5)
 
-entryFechaInicio=Entry(venframe)
+entryFechaInicio=Entry(venframe,textvariable=FIc)
 entryFechaInicio.config(font="14",fg="BLUE")
 entryFechaInicio.grid(row=3,column=1,padx=10,pady=5)
 
-entryFechaFin=Entry(venframe)
+entryFechaFin=Entry(venframe,textvariable=FFc)
 entryFechaFin.config(font="14",fg="BLUE")
 entryFechaFin.grid(row=4,column=1,padx=10,pady=5)
 
@@ -122,6 +155,7 @@ Scrollvertical=Scrollbar(venframe,command=TextComentario.yview)
 Scrollvertical.grid(row=6,column=2,sticky="nsew")
 
 TextComentario.config(font="14",fg="BLUE",yscrollcommand=Scrollvertical.set)
+
 
 #8. Creamos los label de la columna 0
 
@@ -162,19 +196,21 @@ labelComentario.grid(row=6,column=0,sticky="NE")
 #9. Introducimos 1 botón para buscar debajo de los campos
 
 botonBuscar=Button(venframe)
-botonBuscar.config(text="Buscar",fg="blue",command=Funciones.UnaCualquiera)
+botonBuscar.config(text="Buscar",fg="blue",command=IrBuscar)
 botonBuscar.grid(row=7,column=1,padx=10,pady=5,sticky="W")
 
 
 #10. Añado dos botones abajo, fuera del frame, el botón salir ya funciona.
 botonBorrarCampos=Button(venroot)
-botonBorrarCampos.config(text="Borrar Campos",fg="blue",command=Funciones.UnaCualquiera)
+botonBorrarCampos.config(text="Borrar Campos",fg="blue",command=borrarcampos)
 botonBorrarCampos.grid(row=8,column=0,padx="10",pady="10",sticky="W")
 
 #añadimos lambda antes de la función para evitar que se ejecute antes de tiempo
+
 botonGuardar=Button(venroot)
-botonGuardar.config(text="Guardar",fg="blue",command=lambda:Funciones.Guardar(entryIDcurso.get(),entryNombrecurso.get(),entryLugar.get(),entryFechaInicio.get(),entryFechaFin.get(),ccheckFinalizado.get(),TextComentario.get("1.0",END)))
+botonGuardar.config(text="Guardar",fg="blue",command=lambda:Funciones.Guardar(IDc.get(),Nomc.get(),Lugc.get(),FIc.get(),FFc.get(),ccheckFinalizado.get(),TextComentario.get("1.0",END)))
 botonGuardar.grid(row=8,column=1,padx="10",pady="10",sticky="W")
+
 
 botonSalir=Button(venroot)
 botonSalir.config(text="Salir",fg="blue",command=deseasalir)
@@ -185,7 +221,6 @@ venroot.mainloop()
 
 '''
 Pendiente:
--Ver si es necesaria una clase para las propiedades de cada curso, creo que sería apropiado, ver clasecurso.py
--Ver cómo situar las entradas de texto, los botones y las labels en la ventana.
--Estudiar posibilidad de varios usuarios, en una app en local no tiene sentido
+-Estoy con el paso de poder buscar desde los campos nombre y lugar además del de IDCurso que ya funciona
+-Opción exportar datos (solo los finalizados) 
 '''

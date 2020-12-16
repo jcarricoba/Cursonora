@@ -49,3 +49,81 @@ def Guardar(IDc,Nomc,Lugc,FIc,FFc,Tc,Cc):
 def Salir():
 	Respuesta=messagebox.askquestion("Salir","¿Está seguro de querer salir?")
 	return(Respuesta)
+
+def Buscar(IDc,Nomc,Lugc):
+	Datos=[IDc,Nomc,Lugc]
+	#messagebox.showinfo("control",IDc+" "+Nomc+" "+Lugc)
+	if (IDc==""):
+		if (Nomc!=""):
+			if (Lugc!=""):
+				try:
+					Datos=Nomc,Lugc
+					laConexion=sqlite3.connect("Gestordecursos")
+					elPuntero=laConexion.cursor()
+					elPuntero.execute("SELECT IDCurso,NOMBRE_CURSO FROM DATOSCURSOS WHERE NOMBRE_CURSO LIKE ? AND LUGAR_CURSO LIKE ?",('%'+str(Datos[0])+'%','%'+str(Datos[1])+'%',))
+					resultados=elPuntero.fetchall()
+					if (len(resultados))<2:
+						elPuntero.execute("SELECT IDCurso,NOMBRE_CURSO FROM DATOSCURSOS WHERE NOMBRE_CURSO LIKE ? AND LUGAR_CURSO LIKE ?",('%'+str(Datos[0])+'%','%'+str(Datos[1])+'%'))
+						resultados2=elPuntero.fetchall
+						return(resultados2)
+					else:
+						messagebox.showinfo("INFO","Introduce el número identificador del curso en el campo IDCurso entre los siguientes: \n " + str(resultados))
+						return("no")
+				except:
+					messagebox.showwarning("ATENCIÓN!","Algo ha ido mal en la consulta")
+					return "no"
+			else:
+				try:
+					Datos=Nomc
+					laConexion=sqlite3.connect("Gestordecursos")
+					elPuntero=laConexion.cursor()
+					elPuntero.execute("SELECT IDCurso,NOMBRE_CURSO FROM DATOSCURSOS WHERE NOMBRE_CURSO LIKE ?",('%'+str(Datos[0])+'%',))
+					resultados=elPuntero.fetchall()
+					if (len(resultados)<2):
+						elPuntero.execute("SELECT * FROM DATOSCURSOS WHERE LUGAR_CURSO LIKE ?",('%'+str(Datos[0])+'%',))
+						resultados2=elPuntero.fetchall()
+						return(resultados2)
+					elif (len(resultados)>1):
+						messagebox.showinfo("INFO","Introduce el número identificador del curso en el campo IDCurso entre los siguientes: \n" + str(resultados))
+						return "no"
+					else:
+						messagebox.showwarning("ATENCIÓN!","No se encontró ningún registro con ese dato")	
+						return "no"
+				except:
+					messagebox.showwarning("ATENCIÓN!","Algo ha ido mal en la consulta")
+					return "no"
+		elif (Lugc!=""):
+			try:
+				Datos=Lugc
+				laConexion=sqlite3.connect("Gestordecursos")
+				elPuntero=laConexion.cursor()
+				elPuntero.execute("SELECT IDCurso,NOMBRE_CURSO FROM DATOSCURSOS WHERE LUGAR_CURSO LIKE ?",('%'+str(Datos)+'%',))
+				resultados=elPuntero.fetchall()
+				if (len(resultados)<2):
+					elPuntero.execute("SELECT * FROM DATOSCURSOS WHERE LUGAR_CURSO LIKE ?",('%'+str(Datos)+'%',))
+					resultados2=elPuntero.fetchall()
+					return(resultados2)
+				elif (len(resultados)>1):
+					messagebox.showinfo("INFO","Introduce el número identificador del curso en el campo IDCurso entre los siguientes: \n" + str(resultados))
+					return "no"
+				else:
+					messagebox.showwarning("ATENCIÓN!","No se encontró ningún registro con ese dato")
+					return("no")
+			except:
+				messagebox.showwarning("ATENCIÓN!","Algo ha ido mal con la consulta")
+				return "no"	
+	else:
+		try:
+			Datos=IDc
+			laConexion=sqlite3.connect("Gestordecursos")
+			elPuntero=laConexion.cursor()
+			elPuntero.execute("SELECT * FROM DATOSCURSOS WHERE IDCurso=?", (Datos[0],))
+			resultados=elPuntero.fetchall()
+			if (len(resultados)<2 and len(resultados)>0):
+				return(resultados)
+			else:
+				messagebox.showwarning("ATENCIÓN!","No se encontró ningún registro con ese dato")
+				return("no")
+		except:
+			messagebox.showwarning("ATENCIÓN!","Algo ha ido mal con la consulta")
+			return "no"
